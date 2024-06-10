@@ -5,24 +5,33 @@ import { useNavigate } from 'react-router-dom';
 const Home = () => {
   const [country, setCountry] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [cachedCountries, setCachedCountries] = useState({});
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     setCountry(e.target.value);
+    setError('');
   };
-
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (country === '') {
       return;
     }
+    if (cachedCountries[country]) {
+      navigate('/country-details', { state: { countryData: cachedCountries[country] } });
+      return;
+    }
+    setLoading(true);
     try {
       const response = await axios.get(`https://restcountries.com/v3.1/name/${country}`);
+      setCachedCountries((prev) => ({ ...prev, [country]: response.data[0] }));
       navigate('/country-details', { state: { countryData: response.data[0] } });
-      setError('');
     } catch (err) {
       setError('Country not found');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -35,8 +44,8 @@ const Home = () => {
           value={country}
           onChange={handleInputChange}
         />
-        <button type="submit" disabled={country === ''}>
-          Submit
+        <button type="submit" disabled={country === '' || loading}>
+          {loading ? 'Loading...' : 'Submit'}
         </button>
       </form>
       {error && <p>{error}</p>}
