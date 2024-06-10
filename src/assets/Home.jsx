@@ -33,6 +33,7 @@ const Home = () => {
       setCachedCountries((prev) => ({ ...prev, [country.toLowerCase()]: countryData }));
       navigate('/country-details', { state: { countryData } });
     } catch (err) {
+      console.error('Error fetching country data:', err); // Log the error
       setError('Country not found');
     } finally {
       setLoading(false);
